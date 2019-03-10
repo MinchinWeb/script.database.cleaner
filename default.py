@@ -27,26 +27,19 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#
 
 
 import datetime
-
 import json as jsoninterface
-
 import sqlite3
-
 import xml.etree.ElementTree as ET
 
 import mysql.connector
-
 import xbmc
-
 import xbmcaddon
-
 import xbmcgui
-
 import xbmcvfs
+
 
 # database versions to scan for
 MIN_VIDEODB_VERSION = 35
@@ -196,26 +189,31 @@ backup_filename = addon.getSetting('backupname')
 forcedbname = addon.getSetting('overridedb')
 replacepath = addon.getSetting('replacepath')
 enable_logging = addon.getSetting('logtolog')
+
 if enable_logging == 'true':
     enable_logging = True
     type_of_log = addon.getSetting('typeoflog')
 else:
     enable_logging = False
+
 if replacepath == 'true':
     replacepath = True
 else:
     replacepath = False
 old_path = addon.getSetting('oldpath')
 new_path = addon.getSetting('newpath')
+
 if forcedbname == 'true':
     forcedbname = True
 else:
     forcedbname = False
 forcedname = addon.getSetting('forceddbname')
+
 if specificpath == 'true':
     specificpath = True
 else:
     specificpath = False
+
 specific_path_to_remove = addon.getSetting('spcpathstr')
 display_list = []
 excludes_list = []
@@ -229,6 +227,7 @@ path_name = ''
 the_path = ''
 success = 0
 our_source_list = ''
+
 if debugging == 'true':
     debugging = True
 else:
@@ -236,7 +235,6 @@ else:
 
 
 def log(txt):
-
     if isinstance(txt, str):
         txt = txt.decode('utf-8')
         message = u'%s: %s' % (addonname, txt)
@@ -312,6 +310,7 @@ def cleaner_log_file(our_select, cleaning):
     else:
         logfile.write('The following paths were changed in your database')
         logfile.write('\n\n')
+
     if not specificpath and not replacepath:
         for strPath in my_data:
             counting +=1
@@ -351,14 +350,15 @@ def cleaner_log_file(our_select, cleaning):
     logfile.write('\n\n')
     logfile.close()
 
+
 ####    Start Here !!   ####
 
 dbglog('script version %s started' % addonversion)
-#if WINDOW.getProperty('database-cleaner-running') == 'true':
-    #log('Video Database Cleaner already running')
-    #exit(0)
-#else:
-    #WINDOW.setProperty('database-cleaner-running', 'true')
+# if WINDOW.getProperty('database-cleaner-running') == 'true':
+#     log('Video Database Cleaner already running')
+#     exit(0)
+# else:
+#     WINDOW.setProperty('database-cleaner-running', 'true')
 
 xbmcgui.Dialog().notification(addonname, 'Starting Up', xbmcgui.NOTIFICATION_INFO, 2000)
 xbmc.sleep(2000)
@@ -432,26 +432,29 @@ if autoclean == 'true':
     autoclean = True
 else:
     autoclean = False
+
 if bookmarks == 'true':
     bookmarks = True
 else:
     bookmarks = False
+
 if promptdelete == 'true':
     promptdelete = True
 else:
     promptdelete = False
+
 if no_sources == 'true':
     no_sources = False
 else:
     no_sources = True
 
-dbglog('Settings for file cleaning are as follows')
+dbglog('Settings for file cleaning are as follows:')
 if is_pvr:
-    dbglog('keeping PVR files')
+    dbglog('Keeping PVR files')
 if bookmarks:
     dbglog('Keeping bookmarks')
 if autoclean:
-    dbglog('autocleaning afterwards')
+    dbglog('Autocleaning afterwards')
 if promptdelete:
     dbglog('Prompting before deletion')
 if no_sources:
@@ -461,6 +464,7 @@ if source_file_path != '':
     sources_file = source_file_path
     remote_file = True
     dbglog('Remote sources.xml file path identified')
+
 if xbmcvfs.exists(sources_file) and not remote_file:
     try:
         source_file = sources_file
@@ -488,15 +492,15 @@ else:
     dbglog('No local sources.xml, no remote sources file set in settings')
     xbmc.sleep(3000)
     no_sources = True
+
 my_command = ''
 first_time = True
 if forcedbname:
     log('Forcing video db version to %s' % forcedname)
 
 # Open database connection
-
 if is_mysql and not forcedbname:
-    if our_dbname == '': # no db name in advancedsettings
+    if our_dbname == '':  # no db name in advancedsettings
         our_dbname = 'MyVideos'
         for num in range(MAX_VIDEODB_VERSION, MIN_VIDEODB_VERSION, -1):
             testname = our_dbname + str(num)
@@ -511,7 +515,7 @@ if is_mysql and not forcedbname:
                     break
             except:
                 pass
-    else:       # already got db name from ad settings
+    else:  # already got db name from ad settings
         for num in range(MAX_VIDEODB_VERSION, MIN_VIDEODB_VERSION, -1):
             testname = our_dbname + str(num)
             try:
@@ -581,7 +585,8 @@ if xbmcvfs.exists(excludes_file):
         exit_on_error()
 
 if not no_sources:
-    # start reading sources.xml and build SQL statements to exclude these sources from any cleaning
+    # start reading sources.xml and build SQL statements to exclude these
+    # sources from any cleaning
     try:
         display_list =[]
         for video in root.findall('video'):
@@ -604,7 +609,7 @@ if not no_sources:
             if path_name == '':
                 no_sources = True
                 dbglog('******* WARNING *******')
-                dbglog('local sources.xml specified in settings')
+                dbglog('Local sources.xml specified in settings')
                 dbglog('But no sources found in sources.xml file')
                 dbglog('Defaulting to alternate method for cleaning')
     except:
@@ -655,6 +660,7 @@ else:
     sql = """DELETE FROM files WHERE idPath IN (SELECT idPath FROM path WHERE ((strPath LIKE 'rtmp://%' OR strPath LIKE 'rtmpe:%' OR strPath LIKE 'plugin:%' OR strPath LIKE 'http://%' OR strPath LIKE 'https://%') AND (""" + my_command + """)));"""
 #   sql2= """DELETE FROM path WHERE idPath IN (SELECT * FROM( SELECT idPath FROM path WHERE (strPath LIKE 'rtmp://%' OR strPath Like 'rtmpe:%' OR strPath LIKE 'plugin:%' OR strPath LIKE 'http://%') as pathsub);"""
 dbglog('SQL command is %s' % sql)
+
 if not specificpath and not replacepath:
     dbglog (our_source_list)
     our_select = sql.replace('DELETE FROM files','SELECT strPath FROM path',1)
@@ -687,13 +693,13 @@ if promptdelete:
     mydisplay.doModal()
     del mydisplay
     if flag == 1:
-        i = True
+        go_flag = True
     else:
-        i = False
-
+        go_flag = False
 else:
-    i = True
-if i:
+    go_flag = True
+
+if go_flag:
     if autobackup == 'true' and not is_mysql:
         backup_path = xbmc.translatePath('special://database/backups/'
             ).decode('utf-8')
@@ -702,9 +708,11 @@ if i:
             dbglog('Creating backup path %s' % backup_path)
             xbmcvfs.mkdir(backup_path)
         now = datetime.datetime.now()
+
         if forcedbname:
             our_dbname = forcedname
         current_db = db_path + our_dbname + '.db'
+
         if backup_filename == '':
             backup_filename = our_dbname
         backup_db = backup_path + backup_filename + '_' \
@@ -712,6 +720,7 @@ if i:
         backup_filename = backup_filename + '_' \
             + now.strftime('%Y-%m-%d_%H%M')
         success = xbmcvfs.copy(current_db, backup_db)
+
         if success == 1:
             success = 'successful'
         else:
@@ -721,19 +730,16 @@ if i:
     cleaner_log_file(our_select, True)
     if not replacepath:
         try:
-
-        # Execute the SQL command
+            # Execute the SQL command
             dbglog('Executing SQL command - %s' % sql)
             cursor.execute(sql)
-#           cursor.execute(sql2)
-        # Commit the changes in the database
+            # cursor.execute(sql2)
 
+            # Commit the changes in the database
             db.commit()
 
         except Exception as e:
-
-        # Rollback in case there is any error
-
+            # Rollback database on error
             db.rollback()
             dbglog('Error in db commit. Transaction rolled back')
             dbglog('******************************************************************************')
@@ -773,19 +779,18 @@ if i:
                 db.rollback()
                 dbglog('Error in db commit %s. Transaction rolled back' % e)
 
-    # disconnect from server
-#       xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+        # disconnect from server
+        # xbmc.executebuiltin( "Dialog.Close(busydialog)" )
         xbmc.sleep(1000)
         dbglog('Closing progress dialog')
         dialog.close()
     db.close()
     dbglog("Database connection closed")
-    # Make sure replacing or changing a path is a one-shot deal
 
+    # Make sure replacing or changing a path is a one-shot deal
     if replacepath or specificpath:
         addon.setSetting('specificpath', 'false')
         addon.setSetting('replacepath', 'false')
-
 
     if autoclean:
         xbmcgui.Dialog().notification(addonname,
@@ -811,4 +816,5 @@ else:
     dbglog('script aborted by user - no changes made')
     WINDOW.setProperty('database-cleaner-running', 'false')
     exit(1)
+
 WINDOW.setProperty('database-cleaner-running', 'false')
